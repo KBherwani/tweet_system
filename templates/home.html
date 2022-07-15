@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css"/>
+{% endblock extra_css %}
+
+{% block body %}
+<h1>Tweet System</h1>
+<div>
+    <div style="color:red">
+        {% if messages %}
+        {% for message in messages %}
+        {{ message }}
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+<div>
+    <a href="{% url 'tweet:tweet' %}">
+        <button>Add Tweet</button>
+    </a></div><br>
+<div class="row">
+    {% for tweet in tweets %}
+    <div data-aos="flip-down" data-aos-duration="1500" class="card"
+         style="width: 30rem;margin-top:20px;height: fit-content;margin-left:30px;margin-right:25px;border-radius: 35px;background-color: black;color: wheat;">
+        <div class="card-body">
+            <h5 class="card-title">{{tweet.title}}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">by-{{tweet.user}}</h6>
+            <h6 class="card-subtitle mb-2 text-muted">{{tweet.category}}</h6>
+            <p class="card-text">{{tweet.tweet}}</p>
+            <a onclick="myFunction({{tweet.id}})"
+               class="card-link"
+               style="color:white">
+                comment</a>
+
+            <div id="myDIV_{{tweet.id}}" style="display:none">
+                {% for comment in tweet.tweet_comments.all %}
+                {% if comment.visibility == "show" and comment.parent == True %}
+                <div class="meta mb-3"> ⇒{{ comment.content }}<br>
+                    {% comment %}
+                    |----------------|
+                    |   SHOW REPLIES |
+                    |----------------|
+                    {% endcomment %}
+                    <a onclick="myFunctionRply({{comment.id}})"
+                       class="card-link"
+                       style="color:white">
+                        Show All Replies</a>
+                    <div id="myDIVRply_{{comment.id}}" style="display:none">
+                    {% for reply in tweet.tweet_comments.all %}
+                    {% if reply.reply.id == comment.id %}
+                    &emsp;--->{{reply.content}}
+                    <a onclick="myFunction2({{comment.id}})"
+                       class="card-link"
+                       style="color:white">
+                        -reply to comment</a>
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        &emsp;by -{{request.user}}</h6>
+                    <div id="myDIV2_{{comment.id}}" style="display:none">
+                        <form method="POST">
+                            {% csrf_token %}
+                            {{comment_form}}
+                            <input type="hidden" name="comment_id"
+                                   value={{comment.id}}>
+                            <input type="hidden" name="tweet_id"
+                                   value={{tweet.id}}>
+                            <br>
+                            <button type="submit" class="btn btn-info">Add
+                                Reply
+                            </button>
+                        </form>
+                    </div>
+                    <br>
+                    {% endif %}
+                    {% endfor %}
+                    </div><br>
+                      {% comment %}
+                    |-------------------|
+                    |  END SHOW REPLIES |
+                    |-------------------|
+                    {% endcomment %}
+                    <a onclick="myFunction2({{comment.id}})"
+                       class="card-link"
+                       style="color:deepskyblue">
+                        reply</a>
+                    <div id="myDIV2_{{comment.id}}" style="display:none">
+                        <form method="POST">
+                            {% csrf_token %}
+                            {{comment_form}}
+                            <input type="hidden" name="comment_id"
+                                   value={{comment.id}}>
+                            <input type="hidden" name="tweet_id"
+                                   value={{tweet.id}}>
+                            <br>
+                            <button type="submit" class="btn btn-info">Add
+                                Reply
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <form method="POST">
+                    {% csrf_token %}
+                    {{comment_form}}
+                    <input type="hidden" name="tweet_id" value={{tweet.id}}>
+                    <br>
+                    <button type="submit" class="btn btn-info">Add Comment
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        <br>
+    </div>
+
+
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    AOS.init();
+
+
+
+</script>
+<script>
+function myFunction(tweet_id) {
+  var element_id = 'myDIV_'+tweet_id
+  var x = document.getElementById(element_id);
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+
+function myFunction2(comment_id) {
+  var comment_id = 'myDIV2_'+comment_id
+  var y = document.getElementById(comment_id);
+  if (y.style.display === "none") {
+    y.style.display = "block";
+  } else {
+    y.style.display = "none";
+  }
+}
+
+function myFunctionRply(comment_id) {
+  var comment_id = 'myDIVRply_'+comment_id
+  var z = document.getElementById(comment_id);
+  if (z.style.display === "none") {
+    z.style.display = "block";
+  } else {
+    z.style.display = "none";
+  }
+}
+
+
+
+
+</script>
+
+{% endblock extra_js %}
+
